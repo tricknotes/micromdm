@@ -6,9 +6,11 @@ import (
 	"net/http"
 	"net/url"
 	"path/filepath"
+	"os"
 	"time"
 
 	"github.com/boltdb/bolt"
+	"github.com/treeder/bolt-backup"
 	"github.com/go-kit/kit/log"
 	"github.com/go-kit/kit/log/level"
 	boltdepot "github.com/micromdm/scep/depot/bolt"
@@ -185,8 +187,9 @@ func (c *Server) setupCommandQueue(logger log.Logger) error {
 }
 
 func (c *Server) setupBolt() error {
+	backupBucketName := os.Getenv("AWS_BUCKET_NAME")
 	dbPath := filepath.Join(c.ConfigPath, "micromdm.db")
-	db, err := bolt.Open(dbPath, 0644, &bolt.Options{Timeout: time.Second})
+	db, err := backup.Open(dbPath, 0644, &bolt.Options{Timeout: time.Second}, backupBucketName, 5*time.Minute)
 	if err != nil {
 		return errors.Wrap(err, "opening boltdb")
 	}
